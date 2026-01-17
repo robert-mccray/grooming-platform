@@ -53,31 +53,3 @@ module adf './modules/adf.bicep' = {
   }
 }
 
-// ---------------------------------------------
-// EXISTING STORAGE ACCOUNT (for RBAC scope)
-// ---------------------------------------------
-resource storageForRbac 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
-  name: adls.outputs.storageAccountName
-}
-
-// ---------------------------------------------
-// ROLE ASSIGNMENT: ADF → Storage Blob Data Contributor
-// ---------------------------------------------
-resource adfStorageBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  // Role assignment name MUST be deterministic
-  name: guid(
-    resourceGroup().id,
-    storageForRbac.name,
-    adf.outputs.adfName,
-    'StorageBlobDataContributor'
-  )
-  scope: storageForRbac
-  properties: {
-    principalId: adf.outputs.adfPrincipalId
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
-    )
-    principalType: 'ServicePrincipal'
-  }
-}

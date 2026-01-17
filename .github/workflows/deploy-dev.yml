@@ -30,3 +30,50 @@ jobs:
             infra/env/dev.parameters.json
             sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
           failOnStdErr: false
+
+      - name: Assign RBAC (ADF MI -> Storage Blob Data Contributor)
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            set -e
+            RG="rg-groom-dev"
+
+            # Get the ADF created in this RG
+            ADF_NAME=$(az datafactory list -g "$RG" --query "[0].name" -o tsv)
+            if [ -z "$ADF_NAME" ]; then
+              echo "ERROR: No Data Factory found in $RG"
+              exit 1
+            fi
+
+            # Get the Storage Account created in this RG
+            SA_NAME=$(az storage account list -g "$RG" --query "[0].name" -o tsv)
+            if [ -z "$SA_NAME" ]; then
+              echo "ERROR: No Storage Account found in $RG"
+              exit 1
+            fi
+
+            echo "ADF_NAME=$ADF_NAME"
+            echo "SA_NAME=$SA_NAME"
+
+            # ADF Managed Identity principalId
+            ADF_PRINCIPAL_ID=$(az datafactory show -g "$RG" -n "$ADF_NAME" --query "identity.principalId" -o tsv)
+            if [ -z "$ADF_PRINCIPAL_ID" ]; then
+              echo "ERROR: Could not resolve ADF principalId (is system identity enabled?)"
+              exit 1
+            fi
+
+            # Storage scope
+            SA_ID=$(az storage account show -g "$RG" -n "$SA_NAME" --query "id" -o tsv)
+
+            echo "ADF_PRINCIPAL_ID=$ADF_PRINCIPAL_ID"
+            echo "SA_ID=$SA_ID"
+
+            # Create role assignment (idempotent-ish)
+            az role assignment create \
+              --assignee-object-id "$ADF_PRINCIPAL_ID" \
+              --assignee-principal-type ServicePrincipal \
+              --role "Storage Blob Data Contributor" \
+              --scope "$SA_ID" \
+              --only-show-errors || true
+
+            echo "RBAC assignment step complete."
