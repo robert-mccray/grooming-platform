@@ -53,18 +53,31 @@ module adf './modules/adf.bicep' = {
   }
 }
 
-// Existing resource reference for scope (required)
-resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
+// ---------------------------------------------
+// EXISTING STORAGE ACCOUNT (for RBAC scope)
+// ---------------------------------------------
+resource storageForRbac 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
   name: adls.outputs.storageAccountName
 }
 
-// Create role assignment at storage scope
-resource adfStorageRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storage.id, adf.outputs.adfName, 'StorageBlobDataContributor') // deterministic inputs
-  scope: storage
+// ---------------------------------------------
+// ROLE ASSIGNMENT: ADF → Storage Blob Data Contributor
+// ---------------------------------------------
+resource adfStorageBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  // Role assignment name MUST be deterministic
+  name: guid(
+    resourceGroup().id,
+    storageForRbac.name,
+    adf.outputs.adfName,
+    'StorageBlobDataContributor'
+  )
+  scope: storageForRbac
   properties: {
     principalId: adf.outputs.adfPrincipalId
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe') // Storage Blob Data Contributor
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+    )
     principalType: 'ServicePrincipal'
   }
 }
