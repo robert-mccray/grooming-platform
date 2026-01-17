@@ -15,7 +15,6 @@
         "owner": "robert",
         "project": "grooming-platform"
       }
-    },
-    "sqlAdminLogin": { "value": "sqladminuser" }
+    }
   }
 }
