@@ -53,12 +53,18 @@ module adf './modules/adf.bicep' = {
   }
 }
 
+// Existing resource reference for scope (required)
+resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
+  name: adls.outputs.storageAccountName
+}
+
+// Create role assignment at storage scope
 resource adfStorageRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(adls.outputs.storageAccountId, adf.outputs.adfPrincipalId, 'StorageBlobDataContributor')
-  scope: adls.outputs.storageAccountId
+  name: guid(storage.id, adf.outputs.adfName, 'StorageBlobDataContributor') // deterministic inputs
+  scope: storage
   properties: {
     principalId: adf.outputs.adfPrincipalId
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe') // Storage Blob Data Contributor
     principalType: 'ServicePrincipal'
   }
 }
