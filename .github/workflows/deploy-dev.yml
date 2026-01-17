@@ -20,6 +20,14 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Show Bicep files used by pipeline
+        run: |
+          echo "=== main.bicep ==="
+          sed -n '1,200p' infra/bicep/main.bicep
+          echo ""
+          echo "=== sql.bicep ==="
+          sed -n '1,200p' infra/bicep/modules/sql.bicep
+
       - name: Deploy Bicep to rg-groom-dev
         uses: azure/arm-deploy@v2
         with:
@@ -30,6 +38,13 @@ jobs:
             infra/env/dev.parameters.json
             sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
           failOnStdErr: false
+
+      - name: Show deployment outputs
+        if: always()
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az deployment group show -g rg-groom-dev -n main --query "properties.outputs" -o jsonc || true
 
       - name: Show deployment outputs
         uses: azure/cli@v2
