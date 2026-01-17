@@ -1,0 +1,4 @@
+FacilityCode,FacilityName,ResidentExternalId,ResidentFirstName,ResidentLastName,DOB,Room,VendorName,ServiceName,DefaultDurationMin,RequiresStaffPresence,ActiveFlag,LastGroomedDate,Notes
+HOU-ALF-01,Houston Assisted Living 01,R-10001,James,Turner,1942-06-11,112A,Kev's Clippers,Haircut,30,false,1,2025-12-18,"Prefers morning"
+HOU-ALF-01,Houston Assisted Living 01,R-10002,Martha,Reed,1938-09-04,114C,Kev's Clippers,Haircut,30,false,1,2025-12-22,"Dementia - be patient"
+HOU-ALF-02,Houston Assisted Living 02,R-20001,Samuel,Nguyen,1945-01-19,210B,Polished By Ana,Nails,45,true,1,2025-12-10,"Needs staff presence"

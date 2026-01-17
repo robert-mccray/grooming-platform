@@ -1,0 +1,29 @@
+name: Validate IaC (Bicep)
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bicep
+        run: |
+          az bicep install
+        shell: bash
+
+      - name: Bicep Build (syntax validation)
+        run: |
+          az bicep build --file infra/bicep/main.bicep
+        shell: bash
