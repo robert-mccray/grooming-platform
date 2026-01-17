@@ -4,6 +4,7 @@
   "parameters": {
     "environment": { "value": "dev" },
     "namePrefix": { "value": "groom" },
+    "sqlLocation": { "value": "eastus" },
     "tags": {
       "value": {
         "costCenter": "innovation",
@@ -13,7 +14,6 @@
         "lifecycle": "active",
         "managedBy": "bicep",
         "owner": "robert",
-        "sqlLocation": { "value": "southcentralus" },
         "project": "grooming-platform"
       }
     }
