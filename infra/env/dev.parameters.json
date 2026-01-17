@@ -4,7 +4,7 @@
   "parameters": {
     "environment": { "value": "dev" },
     "namePrefix": { "value": "groom" },
-    "sqlLocation": { "value": "eastus" },
+    "sqlLocation": { "value": "eastus2" },
     "tags": {
       "value": {
         "costCenter": "innovation",

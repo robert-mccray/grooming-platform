@@ -44,6 +44,11 @@ module sql './modules/sql.bicep' = {
   }
 }
 
+output sqlServerName string = sql.outputs.sqlServerName
+output sqlServerLocation string = sql.outputs.sqlServerLocation
+
+
+
 module adf './modules/adf.bicep' = {
   name: 'adf'
   params: {

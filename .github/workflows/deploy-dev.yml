@@ -31,6 +31,13 @@ jobs:
             sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
           failOnStdErr: false
 
+      - name: Show deployment outputs
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az deployment group show -g rg-groom-dev -n main --query "properties.outputs" -o jsonc
+
+
       - name: Assign RBAC (ADF MI -> Storage Blob Data Contributor)
         uses: azure/cli@v2
         with:

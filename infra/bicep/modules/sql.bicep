@@ -7,7 +7,7 @@ param tags object
 param sqlAdminPassword string
 param sqlAdminLogin string = 'sqladminuser'
 
-var sqlServerName = toLower('${namePrefix}-${environment}-sql-${uniqueString(resourceGroup().id)}')
+var sqlServerName = toLower('${namePrefix}-${environment}-sql-${uniqueString(resourceGroup().id, deployment().name)}')
 var dbName = '${namePrefix}_${environment}_db'
 
 resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
@@ -34,7 +34,9 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
     maxSizeBytes: 2147483648
   }
 }
-
 output sqlServerName string = sqlServer.name
+output sqlServerLocation string = sqlServer.location
 output sqlDatabaseName string = dbName
 output sqlServerFqdn string = sqlServer.properties.fullyQualifiedDomainName
+output sqlLocationUsed string = location
+
