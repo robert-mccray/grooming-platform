@@ -1,4 +1,8 @@
-SET NOCOUNT ON;
+/* =========================================================
+   Views (reporting)
+   ========================================================= */
+
+GO
 
 CREATE OR ALTER VIEW core.vw_appointments_reporting
 AS
