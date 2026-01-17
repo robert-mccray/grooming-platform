@@ -1,40 +1,50 @@
-/* =========================================================
-   Grooming Platform - Indexes / Reporting Helpers
-   ========================================================= */
+SET NOCOUNT ON;
 
--- Fast “audit by facility + time”
+-- Uniqueness per facility for staff email
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_staff_users_facility_email')
+CREATE UNIQUE INDEX UX_staff_users_facility_email
+  ON core.staff_users(facility_id, email);
+
+-- Many-to-many uniqueness
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_facility_vendors_facility_vendor')
+CREATE UNIQUE INDEX UX_facility_vendors_facility_vendor
+  ON core.facility_vendors(facility_id, vendor_id);
+
+-- Residents browse pattern
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_residents_facility_last_first')
+CREATE INDEX IX_residents_facility_last_first
+  ON core.residents(facility_id, last_name, first_name);
+
+-- Services name unique
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_services_name')
+CREATE UNIQUE INDEX UX_services_name
+  ON core.services(service_name);
+
+-- Schedule hot paths
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_appointments_facility_start')
+CREATE INDEX IX_appointments_facility_start
+  ON core.appointments(facility_id, start_time)
+  INCLUDE (status, vendor_id, resident_id, service_id, end_time);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_appointments_vendor_start')
+CREATE INDEX IX_appointments_vendor_start
+  ON core.appointments(vendor_id, start_time)
+  INCLUDE (status, facility_id, resident_id, service_id, end_time);
+
+-- Approval history
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_approval_events_appt_time')
+CREATE INDEX IX_approval_events_appt_time
+  ON core.approval_events(appointment_id, occurred_at DESC);
+
+-- Audit by facility/time
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_audit_events_facility_time')
 CREATE INDEX IX_audit_events_facility_time
   ON audit.audit_events(facility_id, occurred_at DESC)
   INCLUDE (event_type, actor_role, actor_user_id, appointment_id, target_type, target_id);
 
--- Optional filtered index for “active schedule”
+-- Filtered "active schedule"
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_appointments_active_schedule')
 CREATE INDEX IX_appointments_active_schedule
   ON core.appointments(facility_id, start_time)
   INCLUDE (vendor_id, resident_id, service_id, status, end_time)
   WHERE status IN ('requested','approved');
-
--- Reporting-friendly view (operational)
-CREATE OR ALTER VIEW core.vw_appointments_reporting
-AS
-SELECT
-  a.appointment_id,
-  a.facility_id,
-  f.name AS facility_name,
-  a.resident_id,
-  (r.last_name + ', ' + r.first_name) AS resident_name,
-  a.vendor_id,
-  v.legal_name AS vendor_name,
-  a.service_id,
-  s.service_name,
-  a.start_time,
-  a.end_time,
-  DATEDIFF(MINUTE, a.start_time, a.end_time) AS duration_minutes,
-  a.status,
-  a.created_at,
-  a.updated_at
-FROM core.appointments a
-JOIN core.facilities f ON f.facility_id = a.facility_id
-JOIN core.residents r  ON r.resident_id = a.resident_id
-JOIN core.vendors v    ON v.vendor_id = a.vendor_id
-JOIN core.services s   ON s.service_id = a.service_id;
-GO
