@@ -13,6 +13,7 @@
         "lifecycle": "active",
         "managedBy": "bicep",
         "owner": "robert",
+        "sqlLocation": { "value": "southcentralus" },
         "project": "grooming-platform"
       }
     }

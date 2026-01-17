@@ -1,6 +1,7 @@
 targetScope = 'resourceGroup'
 
 param location string = resourceGroup().location
+param sqlLocation string = location
 param environment string
 param project string = 'grooming-platform'
 param namePrefix string = 'groom'
@@ -34,7 +35,7 @@ module adls './modules/adls.bicep' = {
 module sql './modules/sql.bicep' = {
   name: 'sql'
   params: {
-    location: location
+    location: sqlLocation
     namePrefix: namePrefix
     environment: environment
     tags: tags
